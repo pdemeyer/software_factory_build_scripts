@@ -27,7 +27,7 @@
     </target>
 
     <!-- export .servoy for running jsunit tests on import (smart) client-->
-    <target name="escs_73" if="servoy.install.7.3.or.higher">
+    <target name="escs_73" unless="servoy.install.lower.then.7.3">
         <!-- starting with Servoy 7.3, multiple solutions can be exported with one call using a comma separated list of solution names as argument -->
         <if>
             <isset property="build.run.unit.tests"/>
@@ -40,7 +40,7 @@
     </target>
 
     <!-- export .servoy for running jsunit tests on import (smart) client-->
-    <target name="escs_lower" unless="servoy.install.7.3.or.higher">
+    <target name="escs_lower" if="servoy.install.lower.then.7.3">
         <!-- for pre 7.3 we either need to iterate and execute 1 by 1 -->
         <if>
             <isset property="build.run.unit.tests"/>
@@ -57,7 +57,7 @@
     </target>
 
     <!-- export .servoy for running jsunit tests on import (mobile) client-->
-    <target name="emcs_73" if="servoy.install.7.3.or.higher">
+    <target name="emcs_73" unless="servoy.install.lower.then.7.3">
         <!-- starting with Servoy 7.3, multiple solutions can be exported with one call using a comma separated list of solution names as argument -->
         <if>
             <isset property="build.run.mobile.unit.tests"/>
@@ -70,7 +70,7 @@
         </if>        
     </target>
     
-    <target name="rmme_73" if="servoy.install.7.3.or.higher">
+    <target name="rmme_73" unless="servoy.install.lower.then.7.3">
         <if>
             <isset property="build.run.mobile.unit.tests"/>
             <then>
@@ -81,7 +81,7 @@
         </if>        
     </target>
     
-    <target name="rmme_lower" unless="servoy.install.7.3.or.higher">
+    <target name="rmme_lower" if="servoy.install.lower.then.7.3">
         <if>
             <isset property="build.run.mobile.unit.tests"/>
             <then>
@@ -100,7 +100,7 @@
         </if>        
     </target>
     
-    <target name="emcs_lower" unless="servoy.install.7.3.or.higher">
+    <target name="emcs_lower" if="servoy.install.lower.then.7.3">
         <!-- for pre 7.3 we either need to iterate and execute 1 by 1 -->
         <if>
             <isset property="build.run.mobile.unit.tests"/>
@@ -325,7 +325,7 @@
         </delete>
     </target>
 
-    <target name="clean_passed_exports_if_needed" if="always_clean_passed_exports">
+    <target name="clean_passed_exports_if_needed" unless="dont_clean_passed_exports">
         <make-clean-dir dir="${passed.exports.dir}"/>
         <make-clean-dir dir="${passed.mc.exports.dir}"/>
         <make-clean-dir dir="${passed.sc.exports.dir}"/>
