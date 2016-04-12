@@ -1,0 +1,193 @@
+<?xml version="1.0"?>
+
+<!-- Works with Ant 1.7.0 and higher -->
+<project basedir=".">
+
+    <property file="local_ant_build.properties"/> <!-- this file is not available when running in Jenkins setup, only when running tests locally -->
+    <property file="ant_build.properties"/>
+
+    <import file="utils.xml"/>
+
+    <condition property="build.run.any.unit.tests">
+        <or>
+            <isset property="build.run.unit.tests"/>
+            <isset property="build.run.mobile.unit.tests"/>
+        </or>
+    </condition>
+
+    <target name="run-smart-client-unit-tests" if="build.run.unit.tests">
+        <run-smart-client-tests/>
+    </target>
+    
+    <target name="run-mobile-client-unit-tests" if="build.run.mobile.unit.tests">
+        <for list="${mobile_test_solutions}" param="solution">
+          <sequential>
+            <run-mobile-client-tests solutionName="@{solution}" driverType="localhost_chrome"/>
+              
+              <!-- here is an example of how you could use sauce labs for testing mobile client in the cloud -->
+              <!-- the local server URL (that has the test app. prepared) could be accessed as simulated local URL via SauceLabs "Sauce Connect" proxy from the cloud test server (browser) -->
+              <!--
+              <run-mobile-client-tests solutionName="@{solution}" driverType="remote iphone ${sauce.labs.selenium.url} idle-timeout=${sauce.labs.selenium.idle-timeout}" />
+              <run-mobile-client-tests solutionName="@{solution}" driverType="remote android ${sauce.labs.selenium.url} idle-timeout=${sauce.labs.selenium.idle-timeout}" />
+              <run-mobile-client-tests solutionName="@{solution}" driverType="remote chrome ${sauce.labs.selenium.url} idle-timeout=${sauce.labs.selenium.idle-timeout}" />
+              (...)
+              -->
+          </sequential>
+        </for>
+    </target>
+
+
+    <macrodef name="run-smart-client-tests">
+        <sequential>
+            <echo level="verbose">
+                *** Servoy Solution JS unit (smart) client tests ***
+            </echo>
+        	
+        	<var name="absolute.jsunit.servoy.properties" unset="true"/>
+        	<var name="absolute.smart.test.exports.dir" unset="true"/>
+            <property name="absolute.jsunit.servoy.properties" location="${jsunit.servoy.properties}"/>
+            <property name="absolute.smart.test.exports.dir" location="${smart.test.exports.dir}"/>
+
+            <!-- Define a timeout so we know the test will finish eventually -->
+            <junit fork="yes" forkmode="once" timeout="${unit.test.timeout}" dir="${servoy.app_server.dir}" haltonfailure="false" haltonerror="false" errorProperty="test.failed" failureProperty="test.failed" printsummary="on">
+                <jvmarg value="-XX:MaxPermSize=128m" />
+                <classpath refid="classpath.run_test" />
+
+                <sysproperty key="servoy.test.target-exports" value="${absolute.smart.test.exports.dir}" />
+                <sysproperty key="servoy.test.property-file" value="${absolute.jsunit.servoy.properties}" />
+                <!-- <sysproperty key="servoy.test.target-file-ext" value=".servoy" /> -->
+
+                <formatter type="brief" usefile="false" />
+                <formatter type="xml" />
+
+                <!-- formatter similar to type="xml" but it shows test suite hierarchy nicely, in a tree-like result xml - useful to nicely show the place where a test failed (solution/form...)
+                but this formatter is not included in ant yet - you would need to patch it yourself and integrate in ant lib from https://issues.apache.org/bugzilla/show_bug.cgi?id=48529
+                if you plan on using it, either comment out the simple "xml" formatter or add "extension" attribute to one of them so they don't get into conflicts when generating xmls -->
+                <!-- <formatter type="xml.suites" /> -->
+
+                <test name="com.servoy.automation.jsunit.smartclient.ServoyJSUnitTestRunner" todir="${jsunit.results.dir}" />
+            </junit>
+            
+            <move file="${servoy.app_server.dir}/servoy_log.txt" tofile="${jsunit.logs.dir}/smart_import_test_client_log.txt" failonerror="false"/>
+            <create_test_report/>
+            <fail-if-unittests-failed/>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name="run-mobile-client-tests">
+        <attribute name="solutionName"/>
+        <attribute name="driverType"/>
+        <sequential>
+            <echo level="verbose">
+                *** Servoy Solution JS unit mobile client tests ***
+            </echo>
+            
+            <path id="classpath.run_mobile_test">
+                <path refid="classpath.run_test"/>
+                <fileset file="${selenium.server.jar}"/>
+            </path>
+
+        	<var name="absolute.jsunit.servoy.properties" unset="true"/>
+        	<var name="absolute.servoy.test.target" unset="true"/>
+        	<var name="absolute.servoy.test.targetServiceSolution" unset="true"/>
+            <property name="absolute.jsunit.servoy.properties" location="${jsunit.servoy.properties}"/>
+            <property name="absolute.servoy.test.target" location="${mobile.test.war.dir}/@{solutionName}_TEST.war"/>
+            <property name="absolute.servoy.test.targetServiceSolution" location="${mobile.service.export.dir}/@{solutionName}_service.servoy"/>
+
+        	<!-- Define a timeout so we know the test will finish eventually -->
+            <junit fork="yes" forkmode="once" timeout="${unit.test.timeout}" dir="${servoy.app_server.dir}" haltonfailure="false" haltonerror="false" errorProperty="test.failed" failureProperty="test.failed" printsummary="on">
+                <jvmarg value="-XX:MaxPermSize=128m" />
+                <classpath refid="classpath.run_mobile_test" />
+
+                <sysproperty key="servoy.test.target" value="${absolute.servoy.test.target}" />
+                <sysproperty key="servoy.test.property-file" value="${absolute.jsunit.servoy.properties}" />
+                <sysproperty key="servoy.test.targetServiceSolution" value="${absolute.servoy.test.targetServiceSolution}" />
+                <sysproperty key="servoy.test.seleniumDriver" value="@{driverType}" />
+                <sysproperty key="webdriver.chrome.driver" value="${webdriver.chrome.driver}"/>
+
+                <formatter type="brief" usefile="false" />
+                <formatter type="xml" />
+
+                <!-- formatter similar to type="xml" but it shows test suite hierarchy nicely, in a tree-like result xml - useful to nicely show the place where a test failed (solution/form...)
+                but this formatter is not included in ant yet - you would need to patch it yourself and integrate in ant lib from https://issues.apache.org/bugzilla/show_bug.cgi?id=48529
+                if you plan on using it, either comment out the simple "xml" formatter or add "extension" attribute to one of them so they don't get into conflicts when generating xmls -->
+                <!-- <formatter type="xml.suites" /> -->
+
+                <test name="com.servoy.automation.jsunit.mobile.ServoyMobileJSUnitTestRunner" todir="${jsunit.results.dir}" />
+            </junit>
+
+            <move file="${servoy.app_server.dir}/servoy_log.txt" tofile="${jsunit.logs.dir}/mobile_import_test_client_log.txt" failonerror="false"/>
+            <create_test_report/>
+            <fail-if-unittests-failed/>
+        </sequential>
+    </macrodef>
+            
+    <macrodef name="fail-if-unittests-failed">
+        <sequential>
+            <fail message="Unit tests failed: please check test reports." if="test.failed" />
+        </sequential>
+    </macrodef>
+
+    <macrodef name="create_test_report">
+        <sequential>
+            <junitreport todir="${jsunit.results.dir}">
+                <fileset dir="${jsunit.results.dir}">
+                    <include name="TEST-*.xml" />
+                </fileset>
+                <report format="noframes" todir="${jsunit.results.dir}" />
+
+                <!-- report similar to format="noframes" but it shows test suite hierarchy nicely, in a tree-like result html - useful to nicely show the place where a test failed (solution/form...)
+                but this report is not included in ant yet - you would need to patch it yourself and integrate in ant lib from https://issues.apache.org/bugzilla/show_bug.cgi?id=48529 -->
+                <!-- <report format="noframes-suiteaware" todir="${jsunit.results.dir}" /> -->
+            </junitreport>
+        </sequential>
+    </macrodef>
+        
+    <target name="prepare_jsunit_classpath" if="build.run.any.unit.tests">
+        <mkdir dir="${lib.dir}"/>
+
+        <latest_jar pathName="cse.jsunit.jar.location" dir="${servoy.developer.dir}/plugins" includes="**/com.servoy.eclipse.jsunit_*.jar"/>
+        <latest_jar pathName="cse.model.jar.location" dir="${servoy.developer.dir}/plugins" includes="**/com.servoy.eclipse.model_*.jar"/>
+        <latest_jar pathName="servoy_debug.jar.location" dir="${servoy.developer.dir}/plugins" includes="**/servoy_debug_*.jar"/>
+        <latest_jar pathName="cse.exporter.mobile.location" dir="${servoy.developer.dir}/plugins" includes="**/com.servoy.eclipse.exporter.mobile_*.jar"/>
+        <echo level="info" message="Using in importer classpath: ${cse.jsunit.jar.location_property}" />
+        <echo level="info" message="Using in importer classpath: ${cse.model.jar.location_property}" />
+        <echo level="info" message="Using in importer classpath: ${servoy_debug.jar.location_property}" />
+        <echo level="info" message="Using in importer classpath: ${cse.exporter.mobile.location_property}" />
+
+        <unzip src="${cse.jsunit.jar.location_property}" dest="${lib.dir}">
+            <patternset>
+                <include name="jsunit-*.jar"/>
+                <include name="j2db_test.jar"/>
+            </patternset>
+        </unzip>
+
+        <path id="classpath.run_test">
+            <fileset dir="${servoy.app_server.dir}/lib">
+                <include name="*.jar" />
+                <exclude name="slf4j-jdk14.jar"/>
+            </fileset>
+            <fileset dir="${lib.dir}">
+                <include name="*.jar" />
+            </fileset>
+            <fileset file="${cse.jsunit.jar.location_property}"/>
+            <fileset file="${cse.model.jar.location_property}"/>
+            <fileset file="${servoy_debug.jar.location_property}"/>
+            <fileset file="${cse.exporter.mobile.location_property}"/>
+            <fileset dir="${servoy.developer.dir}/plugins">
+                <include name="org.junit*4*/junit*.jar"/>
+            </fileset>
+        </path>
+    </target>
+
+    <target name="clean_jsunit_tests" if="build.run.any.unit.tests">
+        <echo level="verbose">
+            *** Cleaning test results ***
+        </echo>
+        <make-clean-dir dir="${jsunit.results.dir}" />
+        <make-clean-dir dir="${jsunit.logs.dir}" />
+        <!-- also delete the servoy log file -->
+        <delete failonerror="false" file="${servoy.app_server.dir}/servoy_log.txt" />
+    </target>
+
+</project>

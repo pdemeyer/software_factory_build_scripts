@@ -1,0 +1,4 @@
+node_modules
+
+/protractor.config.js
+/selenese.properties

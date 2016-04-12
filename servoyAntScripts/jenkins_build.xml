@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+
+<!-- Works with Ant 1.7.0 and higher -->
+<project default="main" basedir=".">
+
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+      <classpath>
+        <pathelement location="${ant_contrib.jar.location}"/>
+      </classpath>
+    </taskdef>
+        
+    <import file="exporter.xml"/>
+    <import file="unit_test_runner.xml"/>
+    <import file="e2e_test_runner.xml"/>
+    <import file="deploy.xml"/>
+
+    <!-- This are the steps that are executed depending on which of the following properties is set: -->
+    <!-- (you can set any or all of the above; only the steps that are set/enabled will be executed) -->
+    <!--   - build.run.unit.tests                              -->
+    <!--   - build.run.mobile.unit.tests                       -->
+    <!--   - build.run.e2e.tests                               -->
+    <!--   - build.deploy                                      -->
+    <!--                                                       -->
+    <!-- 1. Clean the needed results and log dirs              -->
+    <!-- 2. Export solutions                                   -->
+      <!--     a) for (smart) jsunit tests (.servoy)             -->
+       <!--     b) for mobile jsunit tests (.servoy, .war)        -->
+    <!--     c) for ng-client end-to-end tests (.war)          -->
+    <!--     d) for deployment (.war)                          -->
+    <!-- 3. Run (smart) jsunit tests; fail build if needed     -->
+    <!-- 4. Run mobile jsunit tests; fail build if needed      -->
+    <!-- 5. Run ng client e2e tests; fail build if needed      -->
+    <!-- 6. Deploy (if all tests passed) to a running Tomcat   -->
+    <!--    (for further (load/manual) testing or production)  -->
+        
+    <!-- NOTE: all exports are done first at point 2 as that might help with splitting up these steps above   -->
+    <!--       into multiple Jenkins jobs - using the artifacts produced by the first (export) job to be sure -->
+    <!--       that we deploy what we tested, but still be able to monitor each job's progress separately     -->
+    <target name="main" depends="
+                            clean_jsunit_exports,
+                            clean_jsunit_tests,
+                            clean_e2e_test_results,
+                            clean_e2e_exports,
+                            clean_deploy_exports,
+                            export_smart_jsunit_solutions,
+                            export_mobile_jsunit_solutions,
+                            export_ngclient_e2e_solutions,
+                            export_deploy_solutions,
+                            run_smart_client_tests,
+                            run_and_move_mobile_exports_if_tests_passed,
+                            run_e2e_tests,
+                            deploy_solutions"/>
+    
+    <target name="main_jsunit_tests" depends="clean_jsunit_exports, clean_jsunit_tests, export_smart_jsunit_solutions, run_smart_client_tests"/>
+    <target name="main_jsunit_mobile_tests" depends="clean_jsunit_exports, clean_jsunit_tests, export_mobile_jsunit_solutions, run_and_move_mobile_exports_if_tests_passed"/>
+    <target name="main_e2e_tests" depends="clean_e2e_test_results, clean_e2e_exports, export_ngclient_e2e_solutions, run_e2e_tests"/>
+    <target name="main_deploy" depends="clean_deploy_exports, export_deploy_solutions, deploy_solutions"/>
+
+    <target name="export_smart_jsunit_solutions" depends="process_export_params, get_equinox_jar, escs_73, escs_lower"/>
+    <target name="export_mobile_jsunit_solutions" depends="process_export_params, get_equinox_jar, emcs_73, emcs_lower"/>
+    <target name="export_ngclient_e2e_solutions" depends="process_export_params, get_equinox_jar, export_wars_for_e2e"/>
+    <target name="export_deploy_solutions" depends="process_export_params, get_equinox_jar, export_wars_for_deploy"/>
+    
+    <target name="process_export_params">
+        <condition property="export.dash.pl.if_needed" value="-pl">
+            <isset property="alternate_project_locations.on"/>
+        </condition>
+        <property name="export.dash.pl.if_needed" value=""/>
+        <echo level="info" message="Non-static export params: ${export.dash.pl.if_needed}"/>
+    </target>
+
+    <target name="run_smart_client_tests" depends="prepare_jsunit_classpath" if="build.run.unit.tests">
+        <antcall target="run-smart-client-unit-tests" inheritRefs="true"/>
+        <antcall target="move_smart_exports_if_tests_passed" inheritRefs="true"/>
+    </target>
+    
+    <target name="move_smart_exports_if_tests_passed" if="build.run.unit.tests">
+        <!-- tests passed, move .servoy files to a "passed" directory for any further use -->
+        <move todir="${passed.sc.exports.dir}">
+            <fileset dir="${smart.test.exports.dir}" includes="**/*" />
+        </move>
+    </target>
+    
+    <target name="run_mobile_client_tests_if_exported_ok" depends="prepare_jsunit_classpath" if="build.run.mobile.unit.tests">
+        <antcall target="run-mobile-client-unit-tests" inheritRefs="true"/>
+    </target>
+    
+    <target name="run_and_move_mobile_exports_if_tests_passed" depends="run_mobile_client_tests_if_exported_ok" if="build.run.mobile.unit.tests">
+        <!-- tests passed, deploy production mode mobile solution to a Servoy Application Server -->
+        <!-- we need to export them again for production mode (not test mode) - to put them in the passed exports dir -->
+        <antcall target="rmme_73" inheritRefs="true"/>
+        <antcall target="rmme_lower" inheritRefs="true"/>
+        <antcall target="move_mobile_exports_if_exported_ok" inheritRefs="true"/>
+    </target>
+    
+    <target name="move_mobile_exports_if_exported_ok" unless="export.failed" if="build.run.mobile.unit.tests">
+        <move todir="${passed.mc.exports.dir}">
+            <fileset dir="${mobile.deploy.s.dir}" includes="**/*" />
+            <fileset dir="${mobile.deploy.w.dir}" includes="**/*" />
+        </move>
+        <antcall target="deploy_mobile_war_files_if_needed" inheritRefs="true"/>
+    </target>
+
+    <target name="deploy_mobile_war_files_if_needed" if="mobile.deploy.webapps.dir">
+        <copy todir="${mobile.deploy.webapps.dir}">
+            <fileset dir="${passed.mc.exports.dir}" includes="**/*.war" />
+        </copy>
+    </target>
+    
+</project>

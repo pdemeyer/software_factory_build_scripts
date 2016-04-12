@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+
+<project name="test_runner" basedir=".">
+
+    <!-- Set up used properties/paths -->
+    <property file="local_ant_build.properties"/> <!-- this file is not available when running in Jenkins setup, only when running tests locally -->
+    <property file="ant_build.properties"/>
+
+    <import file="tomcat-utils.xml"/>
+
+    <property name="absolute.path.e2e.export.dir" location="${e2e.export.dir}"/>
+    
+    <target name="run_e2e_tests" depends="clean_e2e_test_results" if="build.run.e2e.tests">
+        <pathconvert targetos="unix" property="absolute.path.e2e.results.dir">
+            <path location="${e2e.results.dir}"/>
+        </pathconvert>
+        <pathconvert targetos="unix" property="absolute.path.e2e.scripts.dir">
+            <path location="${e2e.scripts.dir}"/>
+        </pathconvert>
+        
+        <copy file="${e2e.testing.dir}/protractor.config.js.template" toFile="${e2e.testing.dir}/protractor.config.js" overwrite="true">
+            <filterset>
+                <filter token="{sauceUserPlaceholder}"                   value="${sauce.labs.user}"/>
+                <filter token="{sauceKeyPlaceholder}"                    value="${sauce.labs.token}"/>
+                <filter token="{e2e.results.dir}"                        value="${absolute.path.e2e.results.dir}"/>
+                <filter token="{e2e.protractor.tests.dir}"               value="${absolute.path.e2e.scripts.dir}"/>
+                <filter token="{e2e.tomcat.base.url}"                    value="${e2e.tomcat.base.url}"/>
+            </filterset>
+        </copy>
+        
+        <copy file="${e2e.testing.dir}/selenese.properties.template" toFile="${e2e.testing.dir}/selenese.properties" overwrite="true">
+            <filterset>
+                <filter token="{sauceUserPlaceholder}"                   value="${sauce.labs.user}"/>
+                <filter token="{sauceKeyPlaceholder}"                    value="${sauce.labs.token}"/>
+                <filter token="{e2e.results.dir}"                        value="${absolute.path.e2e.results.dir}"/>
+                <filter token="{e2e.tomcat.base.url}"                    value="${e2e.tomcat.base.url}"/>
+            </filterset>
+        </copy>
+
+        <trycatch>
+            <try>
+                <echo level="info" message="Trying to stop any previously started tomcat that was left behind unintentionally (if any)."/>
+                <antcall target="e2e-tomcat-stop"/>
+
+                <antcall target="e2e-tomcat-start"/>
+                <for list="${ngclient_e2e_test_solutions}" param="solution.name">
+                    <sequential>
+                        <trycatch property="antException1">
+                            <try>
+                                <echotimestamp />
+
+                                <echo level="info" message="Deploying @{solution.name}..."/>
+                                <deploy url="${e2e.tomcat.manager.url}" username="${e2e.tomcat.username}" password="${e2e.tomcat.password}"
+                                    path="/@{solution.name}" localWar="${absolute.path.e2e.export.dir}/@{solution.name}.war"/>
+
+                                <echo level="info" message="Deployment done. Waiting a bit (10 sec) for things to be stable..."/>
+                                <!-- shouldn't the deploy task wait itself until it is ready to use?! I guess it doesn't wait enough... -->
+                                <sleep seconds="10"/>
+                                
+                                <echo level="info" message="Running e2e tests for this solution..."/>
+                                <echotimestamp />
+                                <ant antfile="build.xml" target="run_all_tests" dir="${e2e.testing.dir}">
+                                    <property name="solution.name" value="@{solution.name}"/>
+                                    <property name="e2e.scripts.dir" value="${e2e.scripts.dir}"/>
+                                </ant>
+                                <echo level="info" message="Tests finished for this solution."/>
+                                <echotimestamp />
+                            </try>
+                            <catch>
+                                <echo level="error" message="Tests FAILED OR ERROR caught when deploying/testing solution @{solution.name}: ${antException1}"/>
+                            </catch>
+                            <finally>
+                                <trycatch property="antException2">
+                                    <try>
+                                        <undeploy url="${e2e.tomcat.manager.url}" username="${e2e.tomcat.username}" password="${e2e.tomcat.password}"
+                                            path="/@{solution.name}"/>
+                                    </try>
+                                    <catch>
+                                        <echo level="error" message="Undeploy FAILED for solution @{solution.name}: ${antException2}"/>
+                                    </catch>
+                                    <finally>
+                                        <echo level="info" message="Appending war app. server log to concatted artifact log..."/>
+                                        
+                                        <!-- now append this war's app server log file to the others to have nice logs -->
+                                        <echo file="${e2e.logs.dir}/war_test_run_logs_concatted.txt" append="true"/>
+                                        <echo file="${e2e.logs.dir}/war_test_run_logs_concatted.txt" append="true" message="------------------------------- Starting to test @{solution.name} -------------------------------"></echo>
+                                        <echo file="${e2e.logs.dir}/war_test_run_logs_concatted.txt" append="true"/>
+                                        <echo file="${e2e.logs.dir}/war_test_run_logs_concatted.txt" append="true"/>
+
+                                        <echo file="${e2e.servoy_user_home.dir}/.servoy/server/@{solution.name}/servoy_log.txt" append="true"/>
+                                        <echo file="${e2e.servoy_user_home.dir}/.servoy/server/@{solution.name}/servoy_log.txt" append="true" message="------------------------------- Finished testing @{solution.name} -------------------------------"></echo>
+                                        <echo file="${e2e.servoy_user_home.dir}/.servoy/server/@{solution.name}/servoy_log.txt" append="true"/>
+                                        
+                                        <concat destfile="${e2e.logs.dir}/war_test_run_logs_concatted.txt" append="true">
+                                            <filelist dir="${e2e.servoy_user_home.dir}/.servoy/server/@{solution.name}" files="servoy_log.txt"/>
+                                        </concat>
+
+                                        <!-- Rename junit results file(s) (can be multiple is multi capability is used) so that it doesn't get overwritten by any following solution -->
+                                        <move todir="${e2e.results.dir}" includeemptydirs="false">
+                                            <fileset dir="${e2e.results.dir}">
+                                                <include name="*junitresults.xml"/>
+                                            </fileset>
+                                            <mapper type="glob" from="*-junitresults.xml" to="protractor_*_@{solution.name}.xml"/>
+                                        </move>
+                                        <move todir="${e2e.results.dir}" includeemptydirs="false">
+                                            <fileset dir="${e2e.results.dir}">
+                                                <include name="TEST-*.xml"/>
+                                            </fileset>
+                                            <mapper type="glob" from="TEST-*.xml" to="selenese_*_@{solution.name}.xml"/>
+                                        </move>
+
+                                        <echo level="info" message="Sleeping for 10 more seconds to fix another problem that sometimes appeared with deploy/undeploy..."/>
+                                        <sleep seconds="10"/>
+                                        <!-- trying to fix a following deploy failing for last solution (no solution available for 90 sec followed by timeout and the following error when trying to undeploy:  "[undeploy] FAIL - The application [/test_xyz] is already being serviced") -->
+                                    </finally>
+                                </trycatch>
+                            </finally>
+                        </trycatch>
+                    </sequential>
+                </for>
+            </try>
+            <finally>
+                <antcall target="e2e-tomcat-stop"/>
+            </finally>
+        </trycatch>
+        <fail if="antException1" message="FAILED: Test deploy/execution failed for one of the test solutions; see messages above."/>
+        <fail if="antException2" message="FAILED: Undeploy failed for one of the test solutions; see messages above."/>
+    </target>
+
+    <target name="e2e-tomcat-start" if="e2e.tomcat.start_stop.tools.tomcat">
+        <tomcat-start tomcatDir="${e2e.tomcat.dir}" servoyUserHome="${e2e.servoy_user_home.dir}"/>
+    </target>
+
+    <target name="e2e-tomcat-stop" if="e2e.tomcat.start_stop.tools.tomcat">
+        <tomcat-stop tomcatDir="${e2e.tomcat.dir}"/>
+    </target>
+
+    <target name="clean_e2e_test_results" if="build.run.e2e.tests">
+        <echo level="verbose">
+            *** Cleaning test results ***
+        </echo>
+        <delete includeemptydirs="true" failonerror="no">
+            <fileset file="junit*.properties"/>
+        </delete>
+        
+        <make-clean-dir dir="${e2e.results.dir}" />
+        <make-clean-dir dir="${e2e.servoy_user_home.dir}" />
+        <make-clean-dir dir="${e2e.logs.dir}" />
+    </target>
+
+</project>
