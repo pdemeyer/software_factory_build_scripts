@@ -130,6 +130,7 @@
             <!-- now we are ready to start the workspace exporter -->
             <echo level="info" message="Using equinox launcher jar: ${equinox.launcher.jar.location_property}" />
 
+        	<var name="export.result" unset="true"/>
             <java   classname="org.eclipse.equinox.launcher.Main"
                     classpathref="equinox.launcher.jar.location"
                     failonerror="#{failOnError}"
@@ -180,6 +181,7 @@
             <!-- now we are ready to start the workspace exporter -->
             <echo level="info" message="Using equinox launcher jar: ${equinox.launcher.jar.location_property}" />
 
+        	<var name="export.result" unset="true"/>
             <java   classname="org.eclipse.equinox.launcher.Main"
                     classpathref="equinox.launcher.jar.location"
                     failonerror="#{failOnError}"
@@ -232,6 +234,7 @@
             <echo level="info" message="Using pluginLocations    dir: ${servoy.developer.dir}/plugins/" />
             <echo level="info" message="Using workspace          dir: ${workspace.solutions.dir}" />
             
+        	<var name="export.result" unset="true"/>
             <java   classname="org.eclipse.equinox.launcher.Main"
                     classpathref="equinox.launcher.jar.location"
                     failonerror="@{failOnError}"
@@ -276,6 +279,7 @@
     
     <macrodef name="check-exporter-exit-code">
         <sequential>
+        	<var name="export.failed" unset="true"/>
             <condition property="export.failed">
                 <not>
                     <equals arg1="${export.result}" arg2="0"/>

@@ -16,7 +16,7 @@
                 <echotimestamp />
                 <echo level="info" message="Deploying @{solution.name}..."/>
         
-                <deploy url="${deploy.tomcat.manager.url}" username="${deploy.tomcat.username}" password="${deploy.tomcat.password}"
+                <deploy update="true" url="${deploy.tomcat.manager.url}" username="${deploy.tomcat.username}" password="${deploy.tomcat.password}"
                     path="/@{solution.name}" localWar="${absolute.path.deploy.export.dir}/@{solution.name}.war"/>
 
                 <echo level="info" message="Deployment for solution @{solution.name} done."/>
