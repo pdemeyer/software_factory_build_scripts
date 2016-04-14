@@ -11,7 +11,7 @@
     <property name="absolute.path.e2e.export.dir" location="${e2e.export.dir}"/>
     
     <target name="run_e2e_tests" depends="clean_e2e_test_results" if="build.run.e2e.tests">
-    	<init-tomcat-tools-if-needed/>
+    	<init-tomcat-tools-if-needed tomcatDir="${e2e.tomcat.dir}"/>
     	
         <pathconvert targetos="unix" property="absolute.path.e2e.results.dir">
             <path location="${e2e.results.dir}"/>

@@ -40,7 +40,7 @@
         <attribute name="tomcatDir" />
         <attribute name="servoyUserHome" />
         <sequential>
-        	<init-tomcat-tools-if-needed/>
+        	<init-tomcat-tools-if-needed tomcatDir="@{tomcatDir}"/>
         	
             <echo level="info" message="Starting Tomcat" />
             <echo level="info" message="Using as JAVA_HOME: ${e2e.tomcat.java.home}." />
@@ -91,7 +91,7 @@
     <macrodef name="tomcat-stop">
         <attribute name="tomcatDir" />
         <sequential>
-        	<init-tomcat-tools-if-needed/>
+        	<init-tomcat-tools-if-needed tomcatDir="@{tomcatDir}"/>
         	
             <echo level="info" message="Stopping Tomcat" />
             <property name="absolute.tomcat" location="@{tomcatDir}" />
