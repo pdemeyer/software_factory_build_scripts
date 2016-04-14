@@ -23,8 +23,8 @@
     <!--                                                       -->
     <!-- 1. Clean the needed results and log dirs              -->
     <!-- 2. Export solutions                                   -->
-      <!--     a) for (smart) jsunit tests (.servoy)             -->
-       <!--     b) for mobile jsunit tests (.servoy, .war)        -->
+    <!--     a) for (smart) jsunit tests (.servoy)             -->
+    <!--     b) for mobile jsunit tests (.servoy, .war)        -->
     <!--     c) for ng-client end-to-end tests (.war)          -->
     <!--     d) for deployment (.war)                          -->
     <!-- 3. Run (smart) jsunit tests; fail build if needed     -->
