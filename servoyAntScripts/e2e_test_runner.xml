@@ -11,8 +11,8 @@
     <property name="absolute.path.e2e.export.dir" location="${e2e.export.dir}"/>
     
     <target name="run_e2e_tests" depends="clean_e2e_test_results" if="build.run.e2e.tests">
-    	<init-tomcat-tools-if-needed tomcatDir="${e2e.tomcat.dir}"/>
-    	
+        <init-tomcat-tools-if-needed tomcatDir="${e2e.tomcat.dir}"/>
+        
         <pathconvert targetos="unix" property="absolute.path.e2e.results.dir">
             <path location="${e2e.results.dir}"/>
         </pathconvert>
@@ -52,7 +52,7 @@
                                 <echotimestamp />
 
                                 <echo level="info" message="Deploying @{solution.name}..."/>
-                                <deploy url="${e2e.tomcat.manager.url}" username="${e2e.tomcat.username}" password="${e2e.tomcat.password}"
+                                <deploy update="true" url="${e2e.tomcat.manager.url}" username="${e2e.tomcat.username}" password="${e2e.tomcat.password}"
                                     path="/@{solution.name}" localWar="${absolute.path.e2e.export.dir}/@{solution.name}.war"/>
 
                                 <echo level="info" message="Deployment done. Waiting a bit (10 sec) for things to be stable..."/>

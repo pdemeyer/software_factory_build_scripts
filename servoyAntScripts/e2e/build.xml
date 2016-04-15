@@ -67,7 +67,7 @@
     <target name="run_all_tests" depends="run_protractor_tests, run_selenium_tests" />
 
     <!-- use this target for jenkins and saucelabs .  It does not require selenium webdiver which is 44 mb -->
-    <target name="run_protractor_tests" depends="install_protractor_if_necessary">
+    <target name="run_protractor_tests" depends="install_protractor">
         <exec executable="cmd" dir="${basedir}" osfamily="windows"
                     failonerror="true">
             <arg value="/c"/>

@@ -42,9 +42,9 @@
             <echo level="verbose">
                 *** Servoy Solution JS unit (smart) client tests ***
             </echo>
-        	
-        	<var name="absolute.jsunit.servoy.properties" unset="true"/>
-        	<var name="absolute.smart.test.exports.dir" unset="true"/>
+            
+            <var name="absolute.jsunit.servoy.properties" unset="true"/>
+            <var name="absolute.smart.test.exports.dir" unset="true"/>
             <property name="absolute.jsunit.servoy.properties" location="${jsunit.servoy.properties}"/>
             <property name="absolute.smart.test.exports.dir" location="${smart.test.exports.dir}"/>
 
@@ -87,14 +87,14 @@
                 <fileset file="${selenium.server.jar}"/>
             </path>
 
-        	<var name="absolute.jsunit.servoy.properties" unset="true"/>
-        	<var name="absolute.servoy.test.target" unset="true"/>
-        	<var name="absolute.servoy.test.targetServiceSolution" unset="true"/>
+            <var name="absolute.jsunit.servoy.properties" unset="true"/>
+            <var name="absolute.servoy.test.target" unset="true"/>
+            <var name="absolute.servoy.test.targetServiceSolution" unset="true"/>
             <property name="absolute.jsunit.servoy.properties" location="${jsunit.servoy.properties}"/>
             <property name="absolute.servoy.test.target" location="${mobile.test.war.dir}/@{solutionName}_TEST.war"/>
             <property name="absolute.servoy.test.targetServiceSolution" location="${mobile.service.export.dir}/@{solutionName}_service.servoy"/>
 
-        	<!-- Define a timeout so we know the test will finish eventually -->
+            <!-- Define a timeout so we know the test will finish eventually -->
             <junit fork="yes" forkmode="once" timeout="${unit.test.timeout}" dir="${servoy.app_server.dir}" haltonfailure="false" haltonerror="false" errorProperty="test.failed" failureProperty="test.failed" printsummary="on">
                 <jvmarg value="-XX:MaxPermSize=128m" />
                 <classpath refid="classpath.run_mobile_test" />

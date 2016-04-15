@@ -8,8 +8,8 @@
     <import file="tomcat-utils.xml"/>
 
     <target name="deploy_solutions" if="build.deploy">
-    	<init-tomcat-tools-if-needed tomcatDir="${e2e.tomcat.dir}"/>
-    	
+        <init-tomcat-tools-if-needed tomcatDir="${e2e.tomcat.dir}"/>
+        
         <echo level="info" message="Deploying solutions to a running Tomcat at ${deploy.tomcat.manager.url} ..."/>
         <property name="absolute.path.deploy.export.dir" location="${deploy.export.dir}"/>
         
