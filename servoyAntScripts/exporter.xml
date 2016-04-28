@@ -267,6 +267,10 @@
                 <arg value="-i18n" />
                 <arg value="-pfw" /> <!-- SVY-9645 is to implement this -pfw option; until then the -p will be put in the war as well -->
                 <arg value="@{propertiesFileForWar}" />
+                <arg value="-defaultAdminUser" />
+                <arg value="servoy" />
+                <arg value="-defaultAdminPassword" />
+                <arg value="servoy" />
                 
                 <!-- add here any of the optional arguments supported by the exporter; see 'export -help' for more info; for example: -->
                 <!--<arg value="-help" />-->
