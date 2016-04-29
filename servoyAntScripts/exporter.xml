@@ -265,6 +265,7 @@
                 <arg value="-pluginLocations" />
                 <arg value="${servoy.developer.dir}/plugins/" />
                 <arg value="-i18n" />
+                <arg value="-ie" />
                 <arg value="-pfw" /> <!-- SVY-9645 is to implement this -pfw option; until then the -p will be put in the war as well -->
                 <arg value="@{propertiesFileForWar}" />
                 <arg value="-defaultAdminUser" />
