@@ -34,7 +34,7 @@
             <then>
                 <export-solution-as-dot-servoy solutionNames="${smart_test_solutions}" failOnError="false"/>
                 <prepare_export_logs destSubdir="unit_smart"/>
-                <put-servoy-files-with-version-number-on-drop-location solutionNames="${mobile_service_solutions}" versionLabel="${version_label}" dropLocationDir="${drop_location}" failOnError="false"/>
+                <copy-servoy-files-with-version-number-on-drop-location solutionNames="${mobile_service_solutions}" versionLabel="${version_label}" dropLocationDir="${drop_location}" failOnError="false"/>
                 <fail-if-export-failed/>
             </then>
         </if>        
@@ -347,7 +347,7 @@
         </sequential>
     </macrodef>
     
-    <macrodef name="put-servoy-files-with-version-number-on-drop-location">
+    <macrodef name="copy-servoy-files-with-version-number-on-drop-location">
         <attribute name="failOnError" default="true"/>
         <attribute name="outputDir" default="${smart.test.exports.dir}"/>
         <attribute name="dropLocationDir" />
@@ -355,10 +355,10 @@
         <attribute name="versionLabel"/>
         <sequential>
         
-        <move todir="@{dropLocationDir}/@{versionLabel}/" includeemptydirs="false">
+        <copy todir="@{dropLocationDir}" includeemptydirs="false">
     		<fileset dir="@{outputDir}"/>
     		<mapper type="glob" from="*.servoy" to="*.@{versionLabel}.servoy"/>
-  		</move>
+  		</copy>
         <delete file="${servoy.app_server.dir}/servoy_log.txt" quiet="true"/>
         </sequential>
     </macrodef>
