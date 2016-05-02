@@ -356,7 +356,7 @@
         
         <move todir="@{outputDir}" includeemptydirs="false">
     		<fileset dir="@{outputDir}"/>
-    		<mapper type="glob" from="*.servoy" to="*.@{outputDir}.servoy"/>
+    		<mapper type="glob" from="*.servoy" to="*.@{versionLabel}.servoy"/>
   		</move>
         </sequential>
     </macrodef>
