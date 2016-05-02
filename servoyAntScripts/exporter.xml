@@ -3,9 +3,6 @@
 <!-- Works with Ant 1.7.0 and higher -->
 <project basedir=".">
 
-	<property environment="env"/>
-	<property name="version_label" value="${env.GLOBIS_VERSION_NUMBER}.${env.VERSION_NUMBER_BUILD}"/>
-
     <property file="local_ant_build.properties"/> <!-- this file is not available when running in Jenkins setup, only when running tests locally -->
     <property file="ant_build.properties"/>
 
