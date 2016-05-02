@@ -3,6 +3,9 @@
 <!-- Works with Ant 1.7.0 and higher -->
 <project basedir=".">
 
+	<property environment="env"/>
+	<property name="version_label" value="${env.GLOBIS_VERSION_NUMBER}.${env.VERSION_NUMBER_BUILD}"/>
+
     <property file="local_ant_build.properties"/> <!-- this file is not available when running in Jenkins setup, only when running tests locally -->
     <property file="ant_build.properties"/>
 
@@ -34,6 +37,7 @@
             <then>
                 <export-solution-as-dot-servoy solutionNames="${smart_test_solutions}" failOnError="false"/>
                 <prepare_export_logs destSubdir="unit_smart"/>
+                <rename-servoy-files-with-version-number solutionNames="${mobile_service_solutions}" versionLabel="${version_label}" failOnError="false"/>
                 <fail-if-export-failed/>
             </then>
         </if>        
@@ -341,6 +345,25 @@
     <macrodef name="prepare_export_logs">
         <attribute name="destSubdir"/>
         <sequential>
+            <move file="${servoy.app_server.dir}/servoy_log.txt" tofile="${export.logs.dir}/@{destSubdir}/workspace_exporter_app_server_log.txt" failonerror="false"/>
+            <move file="${workspace.solutions.dir}/.metadata/.log" tofile="${export.logs.dir}/@{destSubdir}/workspace_exporter_workspace_log.txt" failonerror="false"/>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name="rename-servoy-files-with-version-number">
+        <attribute name="failOnError" default="true"/>
+        <attribute name="outputDir" default="${smart.test.exports.dir}"/>
+        <attribute name="solutionNames"/>
+        <attribute name="versionLabel"/>
+        <sequential>
+        
+        <move todir="outputDir" includeemptydirs="false">
+    		<fileset dir="outputDir"/>
+    		<mapper type="glob" from="*.servoy" to="*..servoy"/>
+  		</move>
+        
+        
+        
             <move file="${servoy.app_server.dir}/servoy_log.txt" tofile="${export.logs.dir}/@{destSubdir}/workspace_exporter_app_server_log.txt" failonerror="false"/>
             <move file="${workspace.solutions.dir}/.metadata/.log" tofile="${export.logs.dir}/@{destSubdir}/workspace_exporter_workspace_log.txt" failonerror="false"/>
         </sequential>
