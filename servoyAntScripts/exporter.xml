@@ -357,15 +357,10 @@
         <attribute name="versionLabel"/>
         <sequential>
         
-        <move todir="outputDir" includeemptydirs="false">
-    		<fileset dir="outputDir"/>
+        <move todir="@{outputDir}" includeemptydirs="false">
+    		<fileset dir="@{outputDir}"/>
     		<mapper type="glob" from="*.servoy" to="*..servoy"/>
   		</move>
-        
-        
-        
-            <move file="${servoy.app_server.dir}/servoy_log.txt" tofile="${export.logs.dir}/@{destSubdir}/workspace_exporter_app_server_log.txt" failonerror="false"/>
-            <move file="${workspace.solutions.dir}/.metadata/.log" tofile="${export.logs.dir}/@{destSubdir}/workspace_exporter_workspace_log.txt" failonerror="false"/>
         </sequential>
     </macrodef>
 
