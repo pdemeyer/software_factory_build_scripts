@@ -23,7 +23,7 @@
         		<arg value = "${publish.files.pattern}" />
         		<arg value = "-m" />
         		<arg value = "${version_label}" />
-        		<arg value = "--author='globis-jenkins <pdemeyer@outlook.be>'" />
+        		<arg value = "--author='globis-jenkins &lt;pdemeyer@outlook.be&gt;'" />
     		</args>
 		</git>
     </target>
@@ -92,6 +92,7 @@
     
     
     <macrodef name = "git">
+    <attribute name="failOnError" default="true"/>
     <attribute name = "command" />
     <attribute name = "dir" default = "" />
     <element name = "args" optional = "true" />
@@ -103,6 +104,7 @@
         </exec>
     </sequential>
 </macrodef>
+
 <macrodef name = "git-clone-pull">
     <attribute name = "repository" />
     <attribute name = "dest" />
