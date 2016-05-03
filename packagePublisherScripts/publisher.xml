@@ -71,13 +71,12 @@
     </macrodef>
     
     
-    
     <macrodef name = "git">
     <attribute name = "command" />
     <attribute name = "dir" default = "" />
     <element name = "args" optional = "true" />
     <sequential>
-        <echo message = "git @{command}" />
+        <echo message = "git @{command} @{dir} @{args}" />
         <exec executable = "git" dir = "@{dir}">
             <arg value = "@{command}" />
             <args/>
