@@ -10,12 +10,29 @@
     </taskdef>
         
    
-    <target name="publish_artifacts" depends="copy_artifacts, git_add_files, git_tag, git_commit, git_push_tags"/>
+    <target name="publish_artifacts" depends="copy_artifacts, git_config, git_add_files, git_tag, git_commit, git_push_tags"/>
 
     <target name="copy_artifacts" >
     	<copy-files inputDir="${publish.source.dir}" outputDir="${publish.destination.dir}" filePattern="${publish.files.pattern}" />
     </target>
     
+    
+    <target name="git_config" >
+    	<git command = "config" dir="${publish.destination.dir}">
+    		<args>
+        		<arg value = "--global" />
+        		<arg value = "user.name" />
+        		<arg value = "globis-jenkins" />
+    		</args>
+		</git>
+    	<git command = "config" dir="${publish.destination.dir}">
+    		<args>
+        		<arg value = "--global" />
+        		<arg value = "user.email" />
+        		<arg value = "pdemeyer@outlook" />
+    		</args>
+		</git>
+    </target>
     
     <target name="git_commit" >
     	<git command = "commit" dir="${publish.destination.dir}">
