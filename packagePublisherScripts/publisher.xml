@@ -27,7 +27,7 @@
     <target name="git_push_tags" >
     	<git command = "push"  dir="${publish.destination.dir}">
     		<args>
-        		<arg value = "origin" />
+        		<arg value = "${publish.git.repository.name}" />
         		<arg value = "--tags" />
     		</args>
 		</git>
