@@ -17,7 +17,7 @@
     </target>
     
     <target name="git_tag" >
-    	<git command = "tag" >
+    	<git command = "tag" dir="${publish.destination.dir}">
     		<args>
         		<arg value = "${publish.tag}" />
     		</args>
@@ -25,7 +25,7 @@
     </target>
 		
     <target name="git_push_tags" >
-    	<git command = "push" >
+    	<git command = "push"  dir="${publish.destination.dir}">
     		<args>
         		<arg value = "origin" />
         		<arg value = "--tags" />
