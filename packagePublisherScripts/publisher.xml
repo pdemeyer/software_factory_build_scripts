@@ -10,12 +10,20 @@
     </taskdef>
         
    
-    <target name="publish_artifacts" depends="copy_artifacts, git_config, git_add_files, git_tag, git_commit, git_push_tags, git_push_files"/>
+    <target name="publish_artifacts" depends="copy_artifacts, git_config, git_checkout_master, git_add_files, git_tag, git_commit, git_push_tags, git_push_files"/>
 
     <target name="copy_artifacts" >
     	<copy-files inputDir="${publish.source.dir}" outputDir="${publish.destination.dir}" filePattern="${publish.files.pattern}" />
     </target>
     
+    
+    <target name="git_checkout_master" >
+    	<git command = "checkout" dir="${publish.destination.dir}">
+    		<args>
+        		<arg value = "master" />
+    		</args>
+		</git>
+    </target>
     
     <target name="git_config" >
     	<git command = "config" dir="${publish.destination.dir}">
