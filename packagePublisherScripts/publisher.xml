@@ -10,7 +10,7 @@
     </taskdef>
         
    
-    <target name="publish_artifacts" depends="copy_artifacts, git_config, git_add_files, git_tag, git_commit, git_push_tags"/>
+    <target name="publish_artifacts" depends="copy_artifacts, git_config, git_add_files, git_tag, git_commit, git_push_tags, git_push_files"/>
 
     <target name="copy_artifacts" >
     	<copy-files inputDir="${publish.source.dir}" outputDir="${publish.destination.dir}" filePattern="${publish.files.pattern}" />
@@ -70,6 +70,15 @@
 		</git>
     </target>
     
+		
+    <target name="git_push_files" >
+    	<git command = "push"  dir="${publish.destination.dir}">
+    		<args>
+        		<arg value = "${publish.git.repository.name}" />
+        		<arg value = "--all" />
+    		</args>
+		</git>
+    </target>
     
     <target name="escs_73" >
         <copy-servoy-files-with-version-number-on-drop-location solutionNames="${mobile_service_solutions}" versionLabel="${version_label}" dropLocationDir="${drop_location}" failOnError="false"/>      
