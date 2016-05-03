@@ -10,10 +10,18 @@
     </taskdef>
         
    
-    <target name="publish_artifacts" depends="copy_artifacts, git_tag, git_push_tags"/>
+    <target name="publish_artifacts" depends="copy_artifacts, git_add_files, git_tag, git_push_tags"/>
 
     <target name="copy_artifacts" >
     	<copy-files inputDir="${publish.source.dir}" outputDir="${publish.destination.dir}" filePattern="${publish.files.pattern}" />
+    </target>
+    
+    <target name="git_add_files" >
+    	<git command = "add" dir="${publish.destination.dir}">
+    		<args>
+        		<arg value = "${publish.files.pattern}" />
+    		</args>
+		</git>
     </target>
     
     <target name="git_tag" >
