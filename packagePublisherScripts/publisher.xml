@@ -20,7 +20,7 @@
     <target name="git_commit" >
     	<git command = "commit" dir="${publish.destination.dir}">
     		<args>
-        		<arg value = "${publish.files.pattern}" />
+        		<arg value = "--all" />
         		<arg value = "-m" />
         		<arg value = "${version_label}" />
         		<arg value = "--author='globis-jenkins &lt;pdemeyer@outlook.be&gt;'" />
