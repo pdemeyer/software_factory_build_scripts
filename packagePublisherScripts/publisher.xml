@@ -23,6 +23,7 @@
         		<arg value = "${publish.files.pattern}" />
         		<arg value = "-m" />
         		<arg value = "${version_label}" />
+        		<arg value = "--author="globis-jenkins <pdemeyer@outlook.be>"" />
     		</args>
 		</git>
     </target>
