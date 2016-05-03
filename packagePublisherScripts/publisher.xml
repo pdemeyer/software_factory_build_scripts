@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+
+<!-- Works with Ant 1.7.0 and higher -->
+<project default="main" basedir=".">
+
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+      <classpath>
+        <pathelement location="${ant_contrib.jar.location}"/>
+      </classpath>
+    </taskdef>
+        
+   
+    <target name="publish_artifacts" depends="copy_artifacts, git_tag, git_push_tags"/>
+
+    <target name="copy_artifacts" >
+    	<copy-files inputDir="${publish.source.dir}" outputDir="${publish.destination.dir}" filePattern="${publish.files.pattern}" />
+    </target>
+    
+    <target name="git_tag" >
+    	<git command = "tag" >
+    		<args>
+        		<arg value = "${publish.tag}" />
+    		</args>
+		</git>
+    </target>
+		
+    <target name="git_push_tags" >
+    	<git command = "push" >
+    		<args>
+        		<arg value = "origin" />
+        		<arg value = "--tags" />
+    		</args>
+		</git>
+    </target>
+    
+    
+    <target name="escs_73" >
+        <copy-servoy-files-with-version-number-on-drop-location solutionNames="${mobile_service_solutions}" versionLabel="${version_label}" dropLocationDir="${drop_location}" failOnError="false"/>      
+    </target>
+    
+    
+    <macrodef name="copy-servoy-files-with-version-number-on-drop-location">
+        <attribute name="failOnError" default="true"/>
+        <attribute name="outputDir" default="${smart.test.exports.dir}"/>
+        <attribute name="dropLocationDir" />
+        <attribute name="solutionNames"/>
+        <attribute name="versionLabel"/>
+        <sequential>
+        
+        <copy todir="@{dropLocationDir}" includeemptydirs="false">
+    		<fileset dir="@{outputDir}"/>
+    		<mapper type="glob" from="*.servoy" to="*.@{versionLabel}.servoy"/>
+  		</copy>
+        <delete file="${servoy.app_server.dir}/servoy_log.txt" quiet="true"/>
+        </sequential>
+    </macrodef>
+    
+    
+    <macrodef name="copy-files">
+        <attribute name="failOnError" default="true"/>
+        <attribute name="outputDir" />
+        <attribute name="inputDir" />
+        <attribute name="filePattern"/>
+        <sequential>
+        
+        <copy todir="@{outputDir}" includeemptydirs="false">
+    		<fileset dir="@{inputDir}"/>
+    		<mapper type="glob" from="@{filePattern}" to="@{filePattern}"/>
+  		</copy>
+        </sequential>
+    </macrodef>
+    
+    
+    
+    <macrodef name = "git">
+    <attribute name = "command" />
+    <attribute name = "dir" default = "" />
+    <element name = "args" optional = "true" />
+    <sequential>
+        <echo message = "git @{command}" />
+        <exec executable = "git" dir = "@{dir}">
+            <arg value = "@{command}" />
+            <args/>
+        </exec>
+    </sequential>
+</macrodef>
+<macrodef name = "git-clone-pull">
+    <attribute name = "repository" />
+    <attribute name = "dest" />
+    <sequential>
+        <git command = "clone">
+            <args>
+                <arg value = "@{repository}" />
+                <arg value = "@{dest}" />
+            </args>
+        </git>
+        <git command = "pull" dir = "@{dest}" />
+    </sequential>
+</macrodef>
+    
+    
+</project>
