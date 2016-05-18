@@ -5,8 +5,20 @@
    
 
    <target name="main" >
-   		<sign_all_plugins pluginsFolder="${plugins.folder}" />
-   	</target>
+		<sequential>
+			<!-- copy the plugins to be signed to a temporary folder -->
+			 <copy todir="plugins" includeemptydirs="false">
+				<fileset dir="${plugin.source.dir}"/>
+			</copy>
+			<!-- sign all plugins -->
+			 <sign_all_plugins pluginsFolder="${plugins.folder}" />
+			 
+			 <!-- copy all files back -->
+			 <move todir="${plugin.source.dir}" includeemptydirs="false">
+				<fileset dir="plugins"/>
+			</copy>
+		</sequential>
+	</target>
    
     <target name="sign_plugins" depends="copy_artifacts, git_config, git_checkout_master, git_add_files, git_commit, git_tag, git_push_files, git_push_tags"/>
 
@@ -14,6 +26,7 @@
     	<copy-files inputDir="${publish.source.dir}" outputDir="${publish.destination.dir}" filePattern="${publish.files.pattern}" />
     </target>
     
+	
     
     <target name="git_checkout_master" >
     	<git command = "checkout" dir="${publish.destination.dir}">
@@ -98,43 +111,36 @@
         <sequential>
             <!-- now we are ready to start the workspace exporter -->
             <echo level="info" message="Using equinox launcher jar: ${equinox.launcher.jar.location_property}" />
+			
+			
+            <latest_jar pathName="jarsigner.jar.location" dir="libs" includes="**/signtester.jar"/>
 
             <java   classname="com.servoy.jarsigner.SignerTest"
-                    classpathref="libs"
+                    classpathref="jarsigner.jar.location"
                     failonerror="#{failOnError}"
                     resultproperty="export.result"
                     fork="true">
+					<!--
                 <jvmarg value="-Xms40m" />
                 <jvmarg value="-Xmx512m" />
                 <jvmarg value="-XX:MaxPermSize=256M" />
                 <jvmarg value="-Dosgi.configuration.cascaded=false" />
-
-                <arg value="-data" />
-                <arg value="${workspace.solutions.dir}" />
-                <arg value="-s" />
-                <arg value="@{solutionNames}" />
-                <arg value="-o" />
-                <arg value="@{outputDir}" />
-                <arg value="-as" />
-                <arg value="${servoy.app_server.dir}" />
-                <arg value="-p" />
-                <arg value="${export.servoy.properties}" />
-                <arg value="-ie" />
+				-->
+                <jvmarg value="-Dcodebase=*" />
 
                 <!-- add here any of the optional arguments supported by the exporter; see 'export -help' for more info; for example: -->
                 <!--arg value="-help" /-->
-                <arg value="-verbose" />
-                <arg value="${export.dash.pl.if_needed}" />
-                <arg value="-dbd" />
-                <arg value="-dbi" />
-                <arg value="-md" />
+                <arg value="libs/globis.jks" />
+                <arg value="9lo815AAl57" />
+                <arg value="ov2s3Wv390Q463y" />
+                <arg value="globisnv" />
+                <arg value="overwrite" />
                 <arg value="ws" />
                 <arg value="-i18n" />
                 <arg value="-users" />
                 <arg value="-tables" />
                 <arg value="-modules" />
             </java>
-            <check-exporter-exit-code/>
         </sequential>
     </macrodef>
     
@@ -152,6 +158,29 @@
         </exec>
     </sequential>
 </macrodef>
+
+    <macrodef name="latest_jar">
+        <attribute name="pathName"/>
+        <attribute name="propertyName" default="@{pathName}_property"/>
+        <attribute name="dir"/>
+        <attribute name="includes"/>
+        <sequential>
+            <!-- store path to newest JAR -->
+            <path id="@{pathName}">
+                <first count="1">
+                    <sort>
+                        <fileset dir="@{dir}" includes="@{includes}" />
+                        <reverse xmlns="antlib:org.apache.tools.ant.types.resources.comparators">
+                            <date />
+                        </reverse>
+                    </sort>
+                </first>
+            </path>
+
+            <!-- create a property as well -->
+            <property name="@{propertyName}" refid="@{pathName}" />
+        </sequential>
+    </macrodef>
 
     
 </project>
