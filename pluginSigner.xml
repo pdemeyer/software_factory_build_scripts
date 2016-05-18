@@ -99,8 +99,8 @@
             <!-- now we are ready to start the workspace exporter -->
             <echo level="info" message="Using equinox launcher jar: ${equinox.launcher.jar.location_property}" />
 
-            <java   classname="org.eclipse.equinox.launcher.Main"
-                    classpathref="equinox.launcher.jar.location"
+            <java   classname="com.servoy.jarsigner.SignerTest"
+                    classpathref="libs"
                     failonerror="#{failOnError}"
                     resultproperty="export.result"
                     fork="true">
@@ -108,9 +108,6 @@
                 <jvmarg value="-Xmx512m" />
                 <jvmarg value="-XX:MaxPermSize=256M" />
                 <jvmarg value="-Dosgi.configuration.cascaded=false" />
-
-                <arg value="-application" />
-                <arg value="com.servoy.eclipse.exporter.solution.application" />
 
                 <arg value="-data" />
                 <arg value="${workspace.solutions.dir}" />
