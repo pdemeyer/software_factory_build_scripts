@@ -1,0 +1,160 @@
+<?xml version="1.0"?>
+
+<!-- Works with Ant 1.7.0 and higher -->
+<project default="main" basedir=".">
+   
+   
+   <target name="main" >
+   		<sign_all_plugins pluginsFolder="">
+   	</target>
+   
+    <target name="sign_plugins" depends="copy_artifacts, git_config, git_checkout_master, git_add_files, git_commit, git_tag, git_push_files, git_push_tags"/>
+
+    <target name="copy_artifacts" >
+    	<copy-files inputDir="${publish.source.dir}" outputDir="${publish.destination.dir}" filePattern="${publish.files.pattern}" />
+    </target>
+    
+    
+    <target name="git_checkout_master" >
+    	<git command = "checkout" dir="${publish.destination.dir}">
+    		<args>
+        		<arg value = "master" />
+    		</args>
+		</git>
+    </target>
+    
+    <target name="git_config" >
+    	<git command = "config" dir="${publish.destination.dir}">
+    		<args>
+        		<arg value = "--global" />
+        		<arg value = "user.name" />
+        		<arg value = "globis-jenkins" />
+    		</args>
+		</git>
+    	<git command = "config" dir="${publish.destination.dir}">
+    		<args>
+        		<arg value = "--global" />
+        		<arg value = "user.email" />
+        		<arg value = "pdemeyer@outlook" />
+    		</args>
+		</git>
+    </target>
+    
+    <target name="git_commit" >
+    	<git command = "commit" dir="${publish.destination.dir}">
+    		<args>
+        		<arg value = "--all" />
+        		<arg value = "-m" />
+        		<arg value = "${publish.tag}" />
+        		<arg value = "--author='globis-jenkins &lt;pdemeyer@outlook.be&gt;'" />
+    		</args>
+		</git>
+    </target>
+    
+    <target name="git_add_files" >
+    	<git command = "add" dir="${publish.destination.dir}">
+    		<args>
+        		<arg value = "${publish.files.pattern}" />
+    		</args>
+		</git>
+    </target>
+    
+    <target name="git_tag" >
+    	<git command = "tag" dir="${publish.destination.dir}">
+    		<args>
+        		<arg value = "${publish.tag}" />
+    		</args>
+		</git>
+    </target>
+		
+    <target name="git_push_tags" >
+    	<git command = "push"  dir="${publish.destination.dir}">
+    		<args>
+        		<arg value = "${publish.git.repository.name}" />
+        		<arg value = "--tags" />
+    		</args>
+		</git>
+    </target>
+    
+		
+    <target name="git_push_files" >
+    	<git command = "push"  dir="${publish.destination.dir}">
+    		<args>
+        		<arg value = "${publish.git.repository.name}" />
+        		<arg value = "--all" />
+    		</args>
+		</git>
+    </target>
+    
+    <target name="escs_73" >
+        <copy-servoy-files-with-version-number-on-drop-location solutionNames="${mobile_service_solutions}" versionLabel="${version_label}" dropLocationDir="${drop_location}" failOnError="false"/>      
+    </target>
+    
+    
+    
+    <macrodef name="sign_all_plugins">
+        <attribute name="pluginsFolder"/>
+        <attribute name="failOnError" default="true"/>
+        <sequential>
+            <!-- now we are ready to start the workspace exporter -->
+            <echo level="info" message="Using equinox launcher jar: ${equinox.launcher.jar.location_property}" />
+
+            <java   classname="org.eclipse.equinox.launcher.Main"
+                    classpathref="equinox.launcher.jar.location"
+                    failonerror="#{failOnError}"
+                    resultproperty="export.result"
+                    fork="true">
+                <jvmarg value="-Xms40m" />
+                <jvmarg value="-Xmx512m" />
+                <jvmarg value="-XX:MaxPermSize=256M" />
+                <jvmarg value="-Dosgi.configuration.cascaded=false" />
+
+                <arg value="-application" />
+                <arg value="com.servoy.eclipse.exporter.solution.application" />
+
+                <arg value="-data" />
+                <arg value="${workspace.solutions.dir}" />
+                <arg value="-s" />
+                <arg value="@{solutionNames}" />
+                <arg value="-o" />
+                <arg value="@{outputDir}" />
+                <arg value="-as" />
+                <arg value="${servoy.app_server.dir}" />
+                <arg value="-p" />
+                <arg value="${export.servoy.properties}" />
+                <arg value="-ie" />
+
+                <!-- add here any of the optional arguments supported by the exporter; see 'export -help' for more info; for example: -->
+                <!--arg value="-help" /-->
+                <arg value="-verbose" />
+                <arg value="${export.dash.pl.if_needed}" />
+                <arg value="-dbd" />
+                <arg value="-dbi" />
+                <arg value="-md" />
+                <arg value="ws" />
+                <arg value="-i18n" />
+                <arg value="-users" />
+                <arg value="-tables" />
+                <arg value="-modules" />
+            </java>
+            <check-exporter-exit-code/>
+        </sequential>
+    </macrodef>
+    
+    
+    <macrodef name = "git">
+    <attribute name="failOnError" default="true"/>
+    <attribute name = "command" />
+    <attribute name = "dir" default = "" />
+    <element name = "args" optional = "true" />
+    <sequential>
+        <echo message = "git @{command} @{dir} @{args}" />
+        <exec executable = "git" dir = "@{dir}">
+            <arg value = "@{command}" />
+            <args/>
+        </exec>
+    </sequential>
+</macrodef>
+
+    
+</project>
