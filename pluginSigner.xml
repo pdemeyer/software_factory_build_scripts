@@ -5,7 +5,7 @@
    
    
    <target name="main" >
-   		<sign_all_plugins pluginsFolder="">
+   		<sign_all_plugins pluginsFolder="${plugins.folder}">
    	</target>
    
     <target name="sign_plugins" depends="copy_artifacts, git_config, git_checkout_master, git_add_files, git_commit, git_tag, git_push_files, git_push_tags"/>
