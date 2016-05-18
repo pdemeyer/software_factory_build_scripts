@@ -3,7 +3,7 @@
 <!-- Works with Ant 1.7.0 and higher -->
 <project default="main" basedir=".">
    
-   <target name="main" depends="copy_and_sign_all_plugins, git_commit, git_push_files" />
+   <target name="main" depends="copy_and_sign_all_plugins, git_checkout_master, git_config, git_commit, git_push_files" />
 
    <target name="copy_and_sign_all_plugins" >
 		<sequential>
