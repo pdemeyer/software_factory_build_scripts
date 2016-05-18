@@ -16,7 +16,7 @@
 			 <!-- copy all files back -->
 			 <move todir="${plugin.source.dir}" includeemptydirs="false">
 				<fileset dir="plugins"/>
-			</copy>
+			</move>
 		</sequential>
 	</target>
    
