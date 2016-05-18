@@ -3,8 +3,9 @@
 <!-- Works with Ant 1.7.0 and higher -->
 <project default="main" basedir=".">
    
+   <target name="main" depends="copy_and_sign_all_plugins, git_commit" />
 
-   <target name="main" >
+   <target name="copy_and_sign_all_plugins" >
 		<sequential>
 			<!-- copy the plugins to be signed to a temporary folder -->
 			 <copy todir="plugins" includeemptydirs="false">
@@ -19,13 +20,6 @@
 			</move>
 		</sequential>
 	</target>
-   
-    <target name="sign_plugins" depends="copy_artifacts, git_config, git_checkout_master, git_add_files, git_commit, git_tag, git_push_files, git_push_tags"/>
-
-    <target name="copy_artifacts" >
-    	<copy-files inputDir="${publish.source.dir}" outputDir="${publish.destination.dir}" filePattern="${publish.files.pattern}" />
-    </target>
-    
 	
     
     <target name="git_checkout_master" >
