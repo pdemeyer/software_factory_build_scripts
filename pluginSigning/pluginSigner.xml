@@ -3,7 +3,7 @@
 <!-- Works with Ant 1.7.0 and higher -->
 <project default="main" basedir=".">
    
-   <target name="main" depends="copy_and_sign_all_plugins, git_commit" />
+   <target name="main" depends="copy_and_sign_all_plugins, git_commit, git_push_files" />
 
    <target name="copy_and_sign_all_plugins" >
 		<sequential>
@@ -77,7 +77,6 @@
     <target name="git_push_tags" >
     	<git command = "push"  dir="${publish.destination.dir}">
     		<args>
-        		<arg value = "${publish.git.repository.name}" />
         		<arg value = "--tags" />
     		</args>
 		</git>
@@ -87,7 +86,6 @@
     <target name="git_push_files" >
     	<git command = "push"  dir="${publish.destination.dir}">
     		<args>
-        		<arg value = "${publish.git.repository.name}" />
         		<arg value = "--all" />
     		</args>
 		</git>
