@@ -12,7 +12,7 @@
 </path>
  
 <taskdef name="http" classname="org.missinglink.ant.task.http.HttpClientTask">
-<classpath refid="runtime.classpath"/>
+	<classpath refid="runtime.classpath"/>
 </taskdef>
  
 <target name="http-get">
