@@ -29,7 +29,7 @@
     <target name="git_checkout_artefact_branch" >
     	<git command = "checkout" dir="${publish.destination.dir}">
     		<args>
-        		<arg value = "{publish.git.branchname}" />
+        		<arg value = "${publish.git.branchname}" />
     		</args>
 		</git>
     </target>
